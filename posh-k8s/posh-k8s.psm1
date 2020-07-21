@@ -2,19 +2,31 @@
 #	kube helper commands and functions for powershell
 ##
 
+# env var for where the config file is
 #$env:KUBECONFIG="H:\.kube\config.nonprod"
+
+# env var for which namespace to default to
 #$env:KUBECTL_NAMESPACE="development"
 
-#alias knonprod='echo -ne "\e]11;#000000\a"; export KUBECONFIG="/home/dwitt/.kube/config.k8snonprod"; PS1="\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] (knonprod) \$ "'
-#alias kazure='echo -ne "\e]11;#000000\a"; export KUBECONFIG="/home/dwitt/.kube/config.azure"; PS1="\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\] (k8sazure) \$ "'
+# set the kubectl env var
+function kenv {
+  Param(
+	[string] $env,
+	[string] $namespace
+  )
 
+	$env:KUBECTL_NAMESPACE=$namespace
+	$env:KUBECONFIG="$($env:USERPROFILE)\.kube\config.$env"
+}
+
+# kubectl command with some arguments injected
 function k { 
 	if (Test-Path env:KUBECTL_NAMESPACE) {
 		kubectl --insecure-skip-tls-verify=true --namespace=$env:KUBECTL_NAMESPACE @args 
 	} else {
 		kubectl --insecure-skip-tls-verify=true @args 
 	}
-} 
+}
 
 function global:prompt
 {
@@ -71,14 +83,3 @@ $GitPromptSettings.DefaultPromptSuffix }
     $global:LASTEXITCODE = $origLastExitCode
     $expandedPromptSuffix
 }
-
-Function kenv {
-  Param(
-	[string] $env,
-	[string] $namespace
-  )
-
-	$env:KUBECTL_NAMESPACE=$namespace
-
-  $env:KUBECONFIG="H:\.kube\config.$env"
-  }
